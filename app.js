@@ -30,12 +30,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Priority: Use the version from the context (summary.version)
                 // This ensures we show the version we are ON, not just the latest one (project.current_version)
-                const activeVersion = summary.version || project.current_version;
+                let activeVersion = summary.version;
+                let isExact = true;
 
-                document.getElementById('current-version-badge').textContent = `v${activeVersion}`;
+                if (activeVersion === undefined || activeVersion === null) {
+                    activeVersion = project.current_version;
+                    isExact = false;
+                }
+
+                const badge = document.getElementById('current-version-badge');
+                badge.textContent = `v${activeVersion}${isExact ? '' : ' (Latest)'}`;
+                badge.title = isExact ? "Exact version detected from context" : "Defaulting to latest version (context version undefined)";
                 
                 // Log detailed info for developers
-                console.log("Project Detected:", project.title, "Active Version:", activeVersion);
+                console.log("Project Detected:", project.title, "Active Version:", activeVersion, "Exact Match:", isExact);
             } else {
                 // Fallback for non-websim environments (or local preview)
                 document.getElementById('current-id').textContent = "Local-Env";
@@ -60,21 +68,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnRunDetect.addEventListener('click', async () => {
         resultDetect.classList.remove('hidden');
         const content = resultDetect.querySelector('.result-content');
-        content.textContent = "Fetching...";
+        content.textContent = "Gathering Debug Info...";
         
+        const debugInfo = {
+            timestamp: new Date().toISOString(),
+            environment: {
+                href: window.location.href,
+                referrer: document.referrer
+            },
+            websim: {
+                available: !!window.websim,
+                methods: window.websim ? Object.keys(window.websim) : []
+            }
+        };
+
         try {
-            const summary = await window.websim.getCurrentProject();
-            const response = await fetch(`/api/v1/projects/${summary.id}`);
-            const data = await response.json();
+            if (window.websim && window.websim.getCurrentProject) {
+                const summary = await window.websim.getCurrentProject();
+                debugInfo.context = summary;
+                debugInfo.contextVersionType = typeof summary.version;
+
+                if (summary.id) {
+                    const response = await fetch(`/api/v1/projects/${summary.id}`);
+                    const data = await response.json();
+                    debugInfo.apiProject = {
+                        id: data.project.id,
+                        current_version: data.project.current_version,
+                        title: data.project.title
+                    };
+                    
+                    debugInfo.logicCheck = {
+                        contextVersion: summary.version,
+                        latestVersion: data.project.current_version,
+                        conclusion: (summary.version) ? "Showing Context Version" : "Falling back to Latest"
+                    };
+                }
+            } else {
+                debugInfo.error = "window.websim.getCurrentProject not found";
+            }
             
-            content.textContent = JSON.stringify({
-                websimContext: summary,
-                apiResponse: data.project
-            }, null, 2);
-            
+            content.textContent = JSON.stringify(debugInfo, null, 2);
             triggerSuccessFeedback(btnRunDetect);
         } catch (err) {
-            content.textContent = "Error: " + err.message;
+            debugInfo.exception = err.message;
+            debugInfo.stack = err.stack;
+            content.textContent = JSON.stringify(debugInfo, null, 2);
         }
     });
 

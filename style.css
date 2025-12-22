@@ -174,7 +174,8 @@ header p {
     font-family: ui-monospace, monospace;
     font-size: 0.85rem;
     overflow-x: auto;
-    max-height: 300px;
+    max-height: 500px;
+    white-space: pre;
 }
 
 .log-list {
