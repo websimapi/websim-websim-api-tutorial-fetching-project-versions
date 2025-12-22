@@ -16,8 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function refreshProjectInfo() {
         try {
             if (window.websim && window.websim.getCurrentProject) {
-                // 1. Initial Identification
-                const summary = await window.websim.getCurrentProject();
+                // 1. Fetch Context & Creator in parallel
+                const [summary, creator] = await Promise.all([
+                    window.websim.getCurrentProject(),
+                    window.websim.getCreator()
+                ]);
                 
                 // 2. Detailed Metadata
                 const response = await fetch(`/api/v1/projects/${summary.id}`);
@@ -27,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Update UI elements
                 document.getElementById('current-id').textContent = project.id;
+                document.getElementById('current-creator').textContent = creator.username;
 
                 // Priority: Use the version from the context (summary.version)
                 // This ensures we show the version we are ON, not just the latest one (project.current_version)
@@ -40,14 +44,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const badge = document.getElementById('current-version-badge');
                 badge.textContent = `v${activeVersion}${isExact ? '' : ' (Latest)'}`;
-                badge.title = isExact ? "Exact version detected from context" : "Defaulting to latest version (context version undefined)";
+                
+                if (isExact) {
+                    badge.classList.add('exact-match');
+                    badge.title = "Exact version detected from context";
+                } else {
+                    badge.classList.remove('exact-match');
+                    badge.title = "Defaulting to latest version (context version undefined)";
+                }
                 
                 // Log detailed info for developers
-                console.log("Project Detected:", project.title, "Active Version:", activeVersion, "Exact Match:", isExact);
+                console.log("Project Detected:", project.title);
+                console.log("Created By:", creator.username);
+                console.log("Active Version:", activeVersion, "Exact Match:", isExact);
             } else {
                 // Fallback for non-websim environments (or local preview)
                 document.getElementById('current-id').textContent = "Local-Env";
                 document.getElementById('current-version-badge').textContent = "v1";
+                document.getElementById('current-creator').textContent = "LocalUser";
             }
         } catch (err) {
             console.error("Project Detection Error:", err);
@@ -85,7 +99,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (window.websim && window.websim.getCurrentProject) {
                 const summary = await window.websim.getCurrentProject();
+                const creator = await window.websim.getCreator();
+                
                 debugInfo.context = summary;
+                debugInfo.creator = creator;
                 debugInfo.contextVersionType = typeof summary.version;
 
                 if (summary.id) {
@@ -94,13 +111,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     debugInfo.apiProject = {
                         id: data.project.id,
                         current_version: data.project.current_version,
-                        title: data.project.title
+                        title: data.project.title,
+                        created_by_id: data.project.created_by_id
                     };
                     
                     debugInfo.logicCheck = {
                         contextVersion: summary.version,
                         latestVersion: data.project.current_version,
-                        conclusion: (summary.version) ? "Showing Context Version" : "Falling back to Latest"
+                        isMatch: summary.version == data.project.current_version,
+                        conclusion: (summary.version != null) ? "Specific Version Detected" : "Falling back to Latest (Context is Null)"
                     };
                 }
             } else {

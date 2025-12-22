@@ -20,8 +20,10 @@
             <div id="page-status" class="page-status">
                 <span class="status-label">Project ID:</span>
                 <code id="current-id">Loading...</code>
-                <span class="status-label">Viewing Version:</span>
+                <span class="status-label">Version:</span>
                 <span id="current-version-badge" class="version-badge">--</span>
+                <span class="status-label">Creator:</span>
+                <code id="current-creator">--</code>
             </div>
             <i data-lucide="book-open" class="title-icon"></i>
             <h1>WebSim Version Logic</h1>
@@ -48,16 +50,24 @@
                             <i data-lucide="copy"></i> Copy
                         </button>
                     </div>
-                    <pre id="detect-code"><code>const projectSummary = await window.websim.getCurrentProject();
-const response = await fetch(`/api/v1/projects/${projectSummary.id}`);
+                    <pre id="detect-code"><code>// 1. Get Context & Creator Info
+const [projectCtx, creatorCtx] = await Promise.all([
+    window.websim.getCurrentProject(),
+    window.websim.getCreator()
+]);
+
+// 2. Fetch Latest Metadata for comparison
+const response = await fetch(`/api/v1/projects/${projectCtx.id}`);
 const { project } = await response.json();
 
-// Prefer the version from the context (projectSummary) to know 
-// exactly which revision is loaded, rather than the latest (project.current_version).
-const activeVersion = projectSummary.version || project.current_version;
+// 3. Determine Active Version
+// projectCtx.version is the specific revision currently loaded.
+// project.current_version is the latest published revision.
+const activeVersion = projectCtx.version ?? project.current_version;
 
-console.log("Current ID:", project.id);
-console.log("Active Version:", activeVersion);</code></pre>
+console.log(`Viewing Project: ${project.title}`);
+console.log(`Created By: ${creatorCtx.username}`);
+console.log(`Version: ${activeVersion} (Latest: ${project.current_version})`);</code></pre>
                 </div>
                 <div id="result-detect" class="test-result hidden">
                     <div class="result-header">Result Output</div>
