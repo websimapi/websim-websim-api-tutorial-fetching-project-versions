@@ -59,16 +59,12 @@ header {
 }
 
 .version-badge {
-    background: var(--text-muted);
+    background: var(--primary);
     color: white;
     padding: 0.1rem 0.6rem;
     border-radius: 99px;
     font-weight: 700;
     font-family: ui-monospace, SFMono-Regular, monospace;
-}
-
-.version-badge.exact-match {
-    background: var(--accent);
 }
 
 .title-icon {
