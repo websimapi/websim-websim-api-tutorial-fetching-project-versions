@@ -30,114 +30,78 @@
 
         <main>
             <section class="tutorial-card">
-                <h2>1. The Concept</h2>
-                <p>
-                    Every WebSim project is identified by a unique 20-character ID (found in the URL after <code>/p/</code>). 
-                    To find the most recent version number, you must query the WebSim Public API. The API maintains a 
-                    <code>current_version</code> integer that increments every time a project is updated or remixed.
-                </p>
+                <h2>1. Project Detection</h2>
+                <p>The application identifies the current project environment through the following sequence:</p>
+                <ol>
+                    <li><strong>Initial Identification</strong>: The app calls <code>window.websim.getCurrentProject()</code>. This returns a summary object containing the ID.</li>
+                    <li><strong>Detailed Metadata</strong>: To get specific version stats and bookmarks, it performs a fetch to <code>/api/v1/projects/${id}</code>.</li>
+                </ol>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>javascript</span>
+                        <button class="copy-btn" data-code="detect-code">
+                            <i data-lucide="copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre id="detect-code"><code>const projectSummary = await window.websim.getCurrentProject();
+const response = await fetch(`/api/v1/projects/${projectSummary.id}`);
+const { project } = await response.json();
+console.log("Current ID:", project.id);
+console.log("Active Version:", project.current_version);</code></pre>
+                </div>
+            </section>
+
+            <section class="tutorial-card">
+                <h2>2. Version Detection & Branching Logic</h2>
+                <p>The version history isn't just a linear list; it's a reconstructed tree built via the ancestry path.</p>
+                
                 <div class="info-box">
                     <i data-lucide="info"></i>
-                    <span>WebSim versions are 1-indexed integers (v1, v2, v3...).</span>
+                    <span>A version is <strong>"Off-Branch"</strong> if it's not in the direct parent chain of the current bookmark.</span>
                 </div>
-            </section>
 
-            <section class="tutorial-card">
-                <h2>2. The API Endpoints</h2>
-                <p>There are two primary ways to retrieve version information:</p>
-                <ul>
-                    <li><strong>Project Detail:</strong> <code>/api/v1/projects/{id}</code> — Returns metadata including the <code>current_version</code>.</li>
-                    <li><strong>Revisions List:</strong> <code>/api/v1/projects/{id}/revisions</code> — Returns a paginated list of all versions.</li>
-                </ul>
-            </section>
-
-            <section class="tutorial-card">
-                <h2>3. Implementation</h2>
-                <p>Use the following JavaScript to extract the ID from a URL and fetch the latest version number:</p>
-                
                 <div class="code-container">
                     <div class="code-header">
                         <span>javascript</span>
-                        <button class="copy-btn" data-code="main-code">
+                        <button class="copy-btn" data-code="ancestry-code">
                             <i data-lucide="copy"></i> Copy
                         </button>
                     </div>
-                    <pre id="main-code"><code>/**
- * Fetches the latest version number for a WebSim project.
- * @param {string} identifier - The project URL or 20-char ID.
- * @returns {Promise&lt;number&gt;} The latest version number.
- */
-async function getLatestWebSimVersion(identifier) {
-    // 1. Extract ID from URL if necessary
-    const idMatch = identifier.match(/\/p\/([a-z0-9_-]{20})/);
-    const projectId = idMatch ? idMatch[1] : identifier;
-
-    if (!/^[a-z0-9_-]{20}$/.test(projectId)) {
-        throw new Error("Invalid Project ID format");
-    }
-
-    // 2. Fetch project metadata
-    const response = await fetch(`/api/v1/projects/${projectId}`);
+                    <pre id="ancestry-code"><code>async function getAncestryPath(projectId, currentVersion) {
+    const res = await fetch(`/api/v1/projects/${projectId}/revisions`);
+    const { revisions } = await res.json();
     
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+    const parentMap = new Map();
+    revisions.data.forEach(rev => {
+        parentMap.set(rev.project_revision.version, rev.project_revision.parent_revision_version);
+    });
+
+    const mainBranch = new Set();
+    let cursor = currentVersion;
+    while (cursor) {
+        mainBranch.add(cursor);
+        cursor = parentMap.get(cursor);
     }
-
-    const data = await response.json();
-
-    // 3. Return the current_version field
-    return data.project.current_version;
-}
-
-// Example usage:
-getLatestWebSimVersion("https://websim.ai/p/vsq88929p4pzh9v9z5u6")
-    .then(v => console.log("Latest version is:", v))
-    .catch(err => console.error(err));</code></pre>
-                </div>
-            </section>
-
-            <section class="tutorial-card">
-                <h2>4. Alternative: Revision History</h2>
-                <p>If you need to verify the highest version number manually from the full history:</p>
-                
-                <div class="code-container">
-                    <div class="code-header">
-                        <span>javascript</span>
-                        <button class="copy-btn" data-code="history-code">
-                            <i data-lucide="copy"></i> Copy
-                        </button>
-                    </div>
-                    <pre id="history-code"><code>async function getMaxVersionFromHistory(projectId) {
-    const res = await fetch(`/api/v1/projects/${projectId}/revisions?first=1`);
-    const data = await res.json();
-    
-    // The revisions list is usually sorted by newest first
-    return data.revisions.data[0].project_revision.version;
+    return mainBranch;
 }</code></pre>
                 </div>
             </section>
 
             <section class="tutorial-card">
-                <h2>5. Project Context (Internal API)</h2>
-                <p>When your code is running <i>inside</i> a WebSim environment, you can use the built-in <code>window.websim</code> object to get the current context immediately without parsing URLs:</p>
-                
+                <h2>3. Real-time Synchronization</h2>
+                <p>Because project state can change while the UI is idle, implement a refresh mechanism using custom events or visibility listeners.</p>
                 <div class="code-container">
                     <div class="code-header">
                         <span>javascript</span>
-                        <button class="copy-btn" data-code="context-code">
+                        <button class="copy-btn" data-code="sync-code">
                             <i data-lucide="copy"></i> Copy
                         </button>
                     </div>
-                    <pre id="context-code"><code>// Retrieve info for the project currently being viewed
-const project = await window.websim.getCurrentProject();
-
-console.log("Project ID:", project.id);
-console.log("Latest Version:", project.current_version);
-console.log("Title:", project.title);
-
-// Get the user currently viewing the page
-const currentUser = await window.websim.getCurrentUser();
-console.log("Logged in as:", currentUser.username);</code></pre>
+                    <pre id="sync-code"><code>window.addEventListener('focus', async () => {
+    // Re-verify project state when user returns to tab
+    const project = await window.websim.getCurrentProject();
+    updateUI(project);
+});</code></pre>
                 </div>
             </section>
         </main>

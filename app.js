@@ -7,20 +7,47 @@ createIcons({
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Fetch and display current project context
-    try {
-        if (window.websim && window.websim.getCurrentProject) {
-            const project = await window.websim.getCurrentProject();
-            document.getElementById('current-id').textContent = project.id;
-            
-            // Note: The API returns current_version (the latest). 
-            // We display it here to show which project version context we are in.
-            document.getElementById('current-version-badge').textContent = `v${project.current_version}`;
+    /**
+     * Implements the logic described in the documentation:
+     * 1. Detect ID
+     * 2. Fetch Detailed Metadata
+     * 3. Sync UI
+     */
+    async function refreshProjectInfo() {
+        try {
+            if (window.websim && window.websim.getCurrentProject) {
+                // 1. Initial Identification
+                const summary = await window.websim.getCurrentProject();
+                
+                // 2. Detailed Metadata
+                const response = await fetch(`/api/v1/projects/${summary.id}`);
+                if (!response.ok) throw new Error("Metadata fetch failed");
+                
+                const { project } = await response.json();
+                
+                // Update UI elements
+                document.getElementById('current-id').textContent = project.id;
+                document.getElementById('current-version-badge').textContent = `v${project.current_version}`;
+                
+                // Log detailed info for developers
+                console.log("Project Detected:", project.title, "Version:", project.current_version);
+            } else {
+                // Fallback for non-websim environments (or local preview)
+                document.getElementById('current-id').textContent = "Local-Env";
+                document.getElementById('current-version-badge').textContent = "v1";
+            }
+        } catch (err) {
+            console.error("Project Detection Error:", err);
+            document.getElementById('current-id').textContent = "Error";
+            document.getElementById('current-version-badge').textContent = "--";
         }
-    } catch (err) {
-        console.error("Context fetch failed:", err);
-        document.getElementById('current-id').textContent = "Unknown";
     }
+
+    // Initial load
+    await refreshProjectInfo();
+
+    // 3. Real-time Synchronization (Sync on window focus)
+    window.addEventListener('focus', refreshProjectInfo);
 
     const copyButtons = document.querySelectorAll('.copy-btn');
 
