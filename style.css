@@ -97,12 +97,136 @@ header p {
 }
 
 .tutorial-card h2 {
-    margin-top: 0;
+    margin: 0;
     font-size: 1.25rem;
     color: #0f172a;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.test-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+    white-space: nowrap;
+}
+
+.test-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 10px -1px rgba(99, 102, 241, 0.3);
+}
+
+.test-btn:active {
+    transform: translateY(0);
+}
+
+.test-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+.test-result {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fafafa;
+    animation: slideDown 0.3s ease-out;
+}
+
+.test-result.hidden {
+    display: none;
+}
+
+.result-header {
+    background: #f1f5f9;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.result-content {
+    padding: 1rem;
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    max-height: 300px;
+}
+
+.log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.log-item {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.log-item:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    color: var(--text-muted);
+    min-width: 80px;
+}
+
+.ancestry-visual {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ancestry-node {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.ancestry-node.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.ancestry-arrow {
+    color: var(--text-muted);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 p {

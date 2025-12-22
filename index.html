@@ -30,7 +30,12 @@
 
         <main>
             <section class="tutorial-card">
-                <h2>1. Project Detection</h2>
+                <div class="card-header-row">
+                    <h2>1. Project Detection</h2>
+                    <button id="btn-run-detect" class="test-btn">
+                        <i data-lucide="play"></i> Run Test
+                    </button>
+                </div>
                 <p>The application identifies the current project environment through the following sequence:</p>
                 <ol>
                     <li><strong>Initial Identification</strong>: The app calls <code>window.websim.getCurrentProject()</code>. This returns a summary object containing the ID and the current active version.</li>
@@ -54,10 +59,19 @@ const activeVersion = projectSummary.version || project.current_version;
 console.log("Current ID:", project.id);
 console.log("Active Version:", activeVersion);</code></pre>
                 </div>
+                <div id="result-detect" class="test-result hidden">
+                    <div class="result-header">Result Output</div>
+                    <pre class="result-content"></pre>
+                </div>
             </section>
 
             <section class="tutorial-card">
-                <h2>2. Version Detection & Branching Logic</h2>
+                <div class="card-header-row">
+                    <h2>2. Version Detection & Branching Logic</h2>
+                    <button id="btn-run-ancestry" class="test-btn">
+                        <i data-lucide="git-branch"></i> Trace Ancestry
+                    </button>
+                </div>
                 <p>The version history isn't just a linear list; it's a reconstructed tree built via the ancestry path.</p>
                 
                 <div class="info-box">
@@ -90,10 +104,19 @@ console.log("Active Version:", activeVersion);</code></pre>
     return mainBranch;
 }</code></pre>
                 </div>
+                <div id="result-ancestry" class="test-result hidden">
+                    <div class="result-header">Reconstruction Path</div>
+                    <div class="ancestry-visual result-content"></div>
+                </div>
             </section>
 
             <section class="tutorial-card">
-                <h2>3. Real-time Synchronization</h2>
+                <div class="card-header-row">
+                    <h2>3. Real-time Synchronization</h2>
+                    <button id="btn-run-sync" class="test-btn">
+                        <i data-lucide="refresh-cw"></i> Sync Now
+                    </button>
+                </div>
                 <p>Because project state can change while the UI is idle, implement a refresh mechanism using custom events or visibility listeners.</p>
                 <div class="code-container">
                     <div class="code-header">
@@ -107,6 +130,10 @@ console.log("Active Version:", activeVersion);</code></pre>
     const project = await window.websim.getCurrentProject();
     updateUI(project);
 });</code></pre>
+                </div>
+                <div id="result-sync" class="test-result hidden">
+                    <div class="result-header">Sync Logs</div>
+                    <div class="result-content log-list"></div>
                 </div>
             </section>
         </main>

@@ -1,9 +1,9 @@
-import { createIcons, BookOpen, Info, Copy, Check } from 'lucide';
+import { createIcons, BookOpen, Info, Copy, Check, Play, GitBranch, RefreshCw, ChevronRight } from 'lucide';
 import confetti from 'canvas-confetti';
 
 // Initialize Lucide Icons
 createIcons({
-    icons: { BookOpen, Info, Copy, Check }
+    icons: { BookOpen, Info, Copy, Check, Play, GitBranch, RefreshCw, ChevronRight }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -51,8 +51,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial load
     await refreshProjectInfo();
 
+    // --- Interactive Testing Logic ---
+
+    // 1. Project Detection Test
+    const btnRunDetect = document.getElementById('btn-run-detect');
+    const resultDetect = document.getElementById('result-detect');
+    
+    btnRunDetect.addEventListener('click', async () => {
+        resultDetect.classList.remove('hidden');
+        const content = resultDetect.querySelector('.result-content');
+        content.textContent = "Fetching...";
+        
+        try {
+            const summary = await window.websim.getCurrentProject();
+            const response = await fetch(`/api/v1/projects/${summary.id}`);
+            const data = await response.json();
+            
+            content.textContent = JSON.stringify({
+                websimContext: summary,
+                apiResponse: data.project
+            }, null, 2);
+            
+            triggerSuccessFeedback(btnRunDetect);
+        } catch (err) {
+            content.textContent = "Error: " + err.message;
+        }
+    });
+
+    // 2. Ancestry Trace Test
+    const btnRunAncestry = document.getElementById('btn-run-ancestry');
+    const resultAncestry = document.getElementById('result-ancestry');
+
+    btnRunAncestry.addEventListener('click', async () => {
+        resultAncestry.classList.remove('hidden');
+        const visual = resultAncestry.querySelector('.ancestry-visual');
+        visual.innerHTML = "Tracing...";
+
+        try {
+            const summary = await window.websim.getCurrentProject();
+            const projectId = summary.id;
+            const currentVersion = summary.version;
+
+            const res = await fetch(`/api/v1/projects/${projectId}/revisions`);
+            const { revisions } = await res.json();
+            
+            const parentMap = new Map();
+            revisions.data.forEach(rev => {
+                parentMap.set(rev.project_revision.version, rev.project_revision.parent_revision_version);
+            });
+
+            const path = [];
+            let cursor = currentVersion;
+            while (cursor) {
+                path.push(cursor);
+                cursor = parentMap.get(cursor);
+            }
+
+            visual.innerHTML = path.map((v, i) => `
+                <span class="ancestry-node ${v === currentVersion ? 'active' : ''}">v${v}</span>
+                ${i < path.length - 1 ? '<i data-lucide="chevron-right" class="ancestry-arrow"></i>' : ''}
+            `).join('');
+            
+            createIcons({ icons: { ChevronRight } });
+            triggerSuccessFeedback(btnRunAncestry);
+        } catch (err) {
+            visual.textContent = "Error: " + err.message;
+        }
+    });
+
+    // 3. Sync Test
+    const btnRunSync = document.getElementById('btn-run-sync');
+    const resultSync = document.getElementById('result-sync');
+    const syncLogs = resultSync.querySelector('.log-list');
+
+    async function performSync(source) {
+        resultSync.classList.remove('hidden');
+        const time = new Date().toLocaleTimeString();
+        const logItem = document.createElement('div');
+        logItem.className = 'log-item';
+        logItem.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg">Sync triggered by <strong>${source}</strong></span>`;
+        syncLogs.prepend(logItem);
+        
+        await refreshProjectInfo();
+    }
+
+    btnRunSync.addEventListener('click', () => {
+        performSync('Button Click');
+        triggerSuccessFeedback(btnRunSync);
+    });
+
     // 3. Real-time Synchronization (Sync on window focus)
-    window.addEventListener('focus', refreshProjectInfo);
+    window.addEventListener('focus', () => performSync('Window Focus'));
+
+    function triggerSuccessFeedback(btn) {
+        confetti({
+            particleCount: 20,
+            spread: 30,
+            origin: { y: 0.9 },
+            colors: ['#6366f1', '#10b981'],
+            disableForReducedMotion: true
+        });
+    }
 
     const copyButtons = document.querySelectorAll('.copy-btn');
 
