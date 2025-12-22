@@ -16,26 +16,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function refreshProjectInfo() {
         try {
             if (window.websim && window.websim.getCurrentProject) {
-                // 1. Initial Identification (Get Project ID)
+                // 1. Initial Identification
                 const summary = await window.websim.getCurrentProject();
                 
-                // 2. Specific Revision Detection (The version in the top-right switcher)
-                const viewedVersion = await window.websim.getProjectVersion();
-                
-                // 3. Detailed Metadata (Optional project info)
+                // 2. Detailed Metadata
                 const response = await fetch(`/api/v1/projects/${summary.id}`);
-                const projectData = response.ok ? (await response.json()).project : summary;
+                if (!response.ok) throw new Error("Metadata fetch failed");
+                
+                const { project } = await response.json();
                 
                 // Update UI elements
-                document.getElementById('current-id').textContent = summary.id;
-                document.getElementById('current-version-badge').textContent = `v${viewedVersion || '?'}`;
+                document.getElementById('current-id').textContent = project.id;
+
+                // Priority: Use the version from the context (summary.version)
+                // This ensures we show the version we are ON, not just the latest one (project.current_version)
+                const activeVersion = summary.version || project.current_version;
+
+                document.getElementById('current-version-badge').textContent = `v${activeVersion}`;
                 
                 // Log detailed info for developers
-                console.log("Project Context:", {
-                    id: summary.id,
-                    viewing: viewedVersion,
-                    latest: projectData.current_version
-                });
+                console.log("Project Detected:", project.title, "Active Version:", activeVersion);
             } else {
                 // Fallback for non-websim environments (or local preview)
                 document.getElementById('current-id').textContent = "Local-Env";
