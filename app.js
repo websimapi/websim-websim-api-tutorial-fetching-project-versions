@@ -6,7 +6,22 @@ createIcons({
     icons: { BookOpen, Info, Copy, Check }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch and display current project context
+    try {
+        if (window.websim && window.websim.getCurrentProject) {
+            const project = await window.websim.getCurrentProject();
+            document.getElementById('current-id').textContent = project.id;
+            
+            // Note: The API returns current_version (the latest). 
+            // We display it here to show which project version context we are in.
+            document.getElementById('current-version-badge').textContent = `v${project.current_version}`;
+        }
+    } catch (err) {
+        console.error("Context fetch failed:", err);
+        document.getElementById('current-id').textContent = "Unknown";
+    }
+
     const copyButtons = document.querySelectorAll('.copy-btn');
 
     copyButtons.forEach(btn => {

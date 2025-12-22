@@ -17,6 +17,12 @@
 <body>
     <div class="container">
         <header>
+            <div id="page-status" class="page-status">
+                <span class="status-label">Project ID:</span>
+                <code id="current-id">Loading...</code>
+                <span class="status-label">Viewing Version:</span>
+                <span id="current-version-badge" class="version-badge">--</span>
+            </div>
             <i data-lucide="book-open" class="title-icon"></i>
             <h1>WebSim Version Logic</h1>
             <p>A technical guide on programmatically identifying the latest version of any WebSim project.</p>
@@ -108,6 +114,30 @@ getLatestWebSimVersion("https://websim.ai/p/vsq88929p4pzh9v9z5u6")
     // The revisions list is usually sorted by newest first
     return data.revisions.data[0].project_revision.version;
 }</code></pre>
+                </div>
+            </section>
+
+            <section class="tutorial-card">
+                <h2>5. Project Context (Internal API)</h2>
+                <p>When your code is running <i>inside</i> a WebSim environment, you can use the built-in <code>window.websim</code> object to get the current context immediately without parsing URLs:</p>
+                
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>javascript</span>
+                        <button class="copy-btn" data-code="context-code">
+                            <i data-lucide="copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre id="context-code"><code>// Retrieve info for the project currently being viewed
+const project = await window.websim.getCurrentProject();
+
+console.log("Project ID:", project.id);
+console.log("Latest Version:", project.current_version);
+console.log("Title:", project.title);
+
+// Get the user currently viewing the page
+const currentUser = await window.websim.getCurrentUser();
+console.log("Logged in as:", currentUser.username);</code></pre>
                 </div>
             </section>
         </main>

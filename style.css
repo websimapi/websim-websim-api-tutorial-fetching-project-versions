@@ -33,6 +33,38 @@ body {
 header {
     text-align: center;
     margin-bottom: 3rem;
+    position: relative;
+}
+
+.page-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem;
+    background: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.status-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.version-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.1rem 0.6rem;
+    border-radius: 99px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, monospace;
 }
 
 .title-icon {
