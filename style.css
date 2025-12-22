@@ -1,0 +1,180 @@
+:root {
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --border: #e2e8f0;
+    --accent: #10b981;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.title-icon {
+    color: var(--primary);
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 0;
+    color: #0f172a;
+}
+
+header p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.tutorial-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tutorial-card h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+p {
+    margin: 1rem 0;
+}
+
+code {
+    background: #f1f5f9;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    color: var(--primary);
+}
+
+.info-box {
+    background: #eef2ff;
+    border-left: 4px solid var(--primary);
+    padding: 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: #4338ca;
+    margin-top: 1rem;
+}
+
+.code-container {
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.code-header {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+pre {
+    margin: 0;
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9rem;
+    color: var(--code-text);
+}
+
+.copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.copy-btn.success {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+}
+
+ul {
+    padding-left: 1.25rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    header h1 {
+        font-size: 1.75rem;
+    }
+    .tutorial-card {
+        padding: 1.5rem;
+    }
+}
+

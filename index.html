@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSim API Tutorial: Fetching Project Versions</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide": "https://esm.sh/lucide",
+        "canvas-confetti": "https://esm.sh/canvas-confetti"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <i data-lucide="book-open" class="title-icon"></i>
+            <h1>WebSim Version Logic</h1>
+            <p>A technical guide on programmatically identifying the latest version of any WebSim project.</p>
+        </header>
+
+        <main>
+            <section class="tutorial-card">
+                <h2>1. The Concept</h2>
+                <p>
+                    Every WebSim project is identified by a unique 20-character ID (found in the URL after <code>/p/</code>). 
+                    To find the most recent version number, you must query the WebSim Public API. The API maintains a 
+                    <code>current_version</code> integer that increments every time a project is updated or remixed.
+                </p>
+                <div class="info-box">
+                    <i data-lucide="info"></i>
+                    <span>WebSim versions are 1-indexed integers (v1, v2, v3...).</span>
+                </div>
+            </section>
+
+            <section class="tutorial-card">
+                <h2>2. The API Endpoints</h2>
+                <p>There are two primary ways to retrieve version information:</p>
+                <ul>
+                    <li><strong>Project Detail:</strong> <code>/api/v1/projects/{id}</code> — Returns metadata including the <code>current_version</code>.</li>
+                    <li><strong>Revisions List:</strong> <code>/api/v1/projects/{id}/revisions</code> — Returns a paginated list of all versions.</li>
+                </ul>
+            </section>
+
+            <section class="tutorial-card">
+                <h2>3. Implementation</h2>
+                <p>Use the following JavaScript to extract the ID from a URL and fetch the latest version number:</p>
+                
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>javascript</span>
+                        <button class="copy-btn" data-code="main-code">
+                            <i data-lucide="copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre id="main-code"><code>/**
+ * Fetches the latest version number for a WebSim project.
+ * @param {string} identifier - The project URL or 20-char ID.
+ * @returns {Promise&lt;number&gt;} The latest version number.
+ */
+async function getLatestWebSimVersion(identifier) {
+    // 1. Extract ID from URL if necessary
+    const idMatch = identifier.match(/\/p\/([a-z0-9_-]{20})/);
+    const projectId = idMatch ? idMatch[1] : identifier;
+
+    if (!/^[a-z0-9_-]{20}$/.test(projectId)) {
+        throw new Error("Invalid Project ID format");
+    }
+
+    // 2. Fetch project metadata
+    const response = await fetch(`/api/v1/projects/${projectId}`);
+    
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // 3. Return the current_version field
+    return data.project.current_version;
+}
+
+// Example usage:
+getLatestWebSimVersion("https://websim.ai/p/vsq88929p4pzh9v9z5u6")
+    .then(v => console.log("Latest version is:", v))
+    .catch(err => console.error(err));</code></pre>
+                </div>
+            </section>
+
+            <section class="tutorial-card">
+                <h2>4. Alternative: Revision History</h2>
+                <p>If you need to verify the highest version number manually from the full history:</p>
+                
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>javascript</span>
+                        <button class="copy-btn" data-code="history-code">
+                            <i data-lucide="copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre id="history-code"><code>async function getMaxVersionFromHistory(projectId) {
+    const res = await fetch(`/api/v1/projects/${projectId}/revisions?first=1`);
+    const data = await res.json();
+    
+    // The revisions list is usually sorted by newest first
+    return data.revisions.data[0].project_revision.version;
+}</code></pre>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>This technical documentation was generated to assist in WebSim API integration.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="app.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
