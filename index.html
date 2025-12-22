@@ -34,7 +34,8 @@
                 <p>The application identifies the current project environment through the following sequence:</p>
                 <ol>
                     <li><strong>Initial Identification</strong>: The app calls <code>window.websim.getCurrentProject()</code>. This returns a summary object containing the ID.</li>
-                    <li><strong>Detailed Metadata</strong>: To get specific version stats and bookmarks, it performs a fetch to <code>/api/v1/projects/${id}</code>.</li>
+                    <li><strong>Specific Revision Detection</strong>: Use <code>window.websim.getProjectVersion()</code> to identify the specific version number currently being rendered.</li>
+                    <li><strong>Detailed Metadata</strong>: To get project-wide stats or the "Head" version, fetch <code>/api/v1/projects/${id}</code>.</li>
                 </ol>
                 <div class="code-container">
                     <div class="code-header">
@@ -44,10 +45,15 @@
                         </button>
                     </div>
                     <pre id="detect-code"><code>const projectSummary = await window.websim.getCurrentProject();
+// Get the version of the current page revision
+const viewedVersion = await window.websim.getProjectVersion();
+
 const response = await fetch(`/api/v1/projects/${projectSummary.id}`);
 const { project } = await response.json();
-console.log("Current ID:", project.id);
-console.log("Active Version:", project.current_version);</code></pre>
+
+console.log("Project ID:", project.id);
+console.log("Viewing Version:", viewedVersion);
+console.log("Latest Published:", project.current_version);</code></pre>
                 </div>
             </section>
 

@@ -16,21 +16,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function refreshProjectInfo() {
         try {
             if (window.websim && window.websim.getCurrentProject) {
-                // 1. Initial Identification
+                // 1. Initial Identification (Get Project ID)
                 const summary = await window.websim.getCurrentProject();
                 
-                // 2. Detailed Metadata
-                const response = await fetch(`/api/v1/projects/${summary.id}`);
-                if (!response.ok) throw new Error("Metadata fetch failed");
+                // 2. Specific Revision Detection (The version in the top-right switcher)
+                const viewedVersion = await window.websim.getProjectVersion();
                 
-                const { project } = await response.json();
+                // 3. Detailed Metadata (Optional project info)
+                const response = await fetch(`/api/v1/projects/${summary.id}`);
+                const projectData = response.ok ? (await response.json()).project : summary;
                 
                 // Update UI elements
-                document.getElementById('current-id').textContent = project.id;
-                document.getElementById('current-version-badge').textContent = `v${project.current_version}`;
+                document.getElementById('current-id').textContent = summary.id;
+                document.getElementById('current-version-badge').textContent = `v${viewedVersion || '?'}`;
                 
                 // Log detailed info for developers
-                console.log("Project Detected:", project.title, "Version:", project.current_version);
+                console.log("Project Context:", {
+                    id: summary.id,
+                    viewing: viewedVersion,
+                    latest: projectData.current_version
+                });
             } else {
                 // Fallback for non-websim environments (or local preview)
                 document.getElementById('current-id').textContent = "Local-Env";
